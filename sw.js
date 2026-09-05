@@ -1,4 +1,4 @@
-const CACHE = 'kostky-v2';
+const CACHE = 'kostky-v3';
 const FILES = [
   './',
   './index.html',
@@ -22,16 +22,17 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// online: vždy čerstvá verze ze sítě (a rovnou se uloží), offline: z mezipaměti
+// online: vždy čerstvě ze serveru, s obejitím HTTP mezipaměti prohlížeče
+// offline: poslední uložená verze
 self.addEventListener('fetch', e => {
   if(e.request.method !== 'GET') return;
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, { cache: 'reload' })
       .then(res => {
         const copy = res.clone();
         caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
         return res;
       })
-      .catch(() => caches.match(e.request))
+      .catch(() => caches.match(e.request).then(hit => hit || caches.match('./index.html')))
   );
 });
