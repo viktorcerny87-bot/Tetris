@@ -34,7 +34,7 @@
   .stat{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:5px 7px}
   .stat span{display:block;font-size:10px;color:var(--muted);letter-spacing:.02em}
   .stat b{display:block;font-size:16px;font-weight:650;font-variant-numeric:tabular-nums;color:var(--text);line-height:1.2}
-  .stat.score b{color:var(--accent)}
+  .stat.score b{color:#FFE066}
   .next{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:5px 4px 6px;text-align:center}
   .next span{display:block;font-size:10px;color:var(--muted);margin-bottom:2px}
   .next canvas{margin:0 auto;background:transparent;border:none;border-radius:0}
@@ -64,12 +64,13 @@
     box-shadow:0 3px 0 rgba(0,0,0,.3)}
   .dot:active,.rotate:active{background:#E0BB00;box-shadow:0 1px 0 rgba(0,0,0,.3)}
   .dot:focus-visible,.rotate:focus-visible{outline:2px solid #fff;outline-offset:3px}
-  .side .pausebtn{width:100%;margin-top:auto;height:44px;background:var(--panel);
-    border:1px solid var(--line);border-radius:9px;padding:0;font-size:13px;color:var(--text);touch-action:none}
+  .side .pausebtn{width:100%;margin-top:auto;height:44px;background:#8FD9A0;
+    border:none;border-radius:9px;padding:0;font-size:13px;font-weight:650;color:#10240F;touch-action:none}
+  .side .pausebtn:active{background:#78C48A}
   .side .start{width:100%;aspect-ratio:1/1;background:#D6453C;color:#fff;border:none;
     font-size:17px;font-weight:700;border-radius:8px;padding:0;touch-action:none}
   .side .start:active{background:#B93A32}
-  .drop{width:72px;height:72px;border-radius:50%;background:var(--dot);border:none;padding:0;
+  .drop{width:72px;height:72px;align-self:center;border-radius:50%;background:var(--dot);border:none;padding:0;
     display:flex;align-items:center;justify-content:center;touch-action:none;box-shadow:0 3px 0 rgba(0,0,0,.3)}
   .drop svg{width:34px;height:34px;fill:#20190A}
   .drop:active{background:#E0BB00;box-shadow:0 1px 0 rgba(0,0,0,.3)}
@@ -80,10 +81,11 @@
   .spd .steps button{flex:0 0 26px;height:28px;padding:0;font-size:17px;line-height:1;border-radius:7px}
   .spd .num{flex:1;text-align:center;font-size:15px;font-weight:650;font-variant-numeric:tabular-nums}
   .spd .auto{width:100%;margin-top:5px;height:26px;padding:0;font-size:11px;border-radius:7px}
-  .spd .auto.on{background:var(--accent);color:#1A1408;border-color:transparent;font-weight:650}
+  .spd .auto.on{background:#C9CFD6;color:#1A1F26;border-color:transparent;font-weight:650}
   @media (max-width:560px){ .hint{display:none} }
   .topbar{width:100%;display:flex;justify-content:space-between;align-items:center}
   .topbar h1{margin:0;font-size:15px;font-weight:600;letter-spacing:.01em}
+  .clock{font-size:15px;font-variant-numeric:tabular-nums;color:var(--muted);letter-spacing:.03em}
   .topbar button{padding:7px 12px;font-size:13px;border-radius:9px}
   .hint{font-size:12px;color:var(--muted);text-align:center;line-height:1.5}
   @media (max-width:400px){.stat b{font-size:18px}}
@@ -93,6 +95,7 @@
 <div class="wrap">
   <div class="topbar">
     <h1>Padající kostky</h1>
+    <span class="clock" id="clock">0:00</span>
   </div>
 
   <div class="main">
@@ -123,6 +126,14 @@
       </div>
       <button class="pausebtn" id="pauseBtn">Pauza</button>
       <button class="start" id="bStart">Start</button>
+      <button class="drop" id="bDrop" aria-label="Shodit kostku">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="7" y="2.6" width="10" height="2.8" rx="0.6"/>
+          <rect x="7" y="7.0" width="10" height="2.8" rx="0.6"/>
+          <rect x="7" y="11.4" width="10" height="2.8" rx="0.6"/>
+          <polygon points="4.6,15.8 19.4,15.8 12,22.4"/>
+        </svg>
+      </button>
     </aside>
   </div>
 
@@ -135,14 +146,6 @@
       <button class="dot small" id="bDown" aria-label="Dolů"></button>
     </div>
     <button class="rotate" id="bRot" aria-label="Otočit kostku"></button>
-    <button class="drop" id="bDrop" aria-label="Shodit kostku">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="7" y="2.6" width="10" height="2.8" rx="0.6"/>
-        <rect x="7" y="7.0" width="10" height="2.8" rx="0.6"/>
-        <rect x="7" y="11.4" width="10" height="2.8" rx="0.6"/>
-        <polygon points="4.6,15.8 19.4,15.8 12,22.4"/>
-      </svg>
-    </button>
 </div>
 
 <script>
@@ -178,6 +181,7 @@
   const ovText = document.getElementById('ovText');
   const ovBtn = document.getElementById('ovBtn');
   const pauseBtn = document.getElementById('pauseBtn');
+  const elClock = document.getElementById('clock');
   const speedVal = document.getElementById('speedVal');
   const spdUp = document.getElementById('spdUp');
   const spdDown = document.getElementById('spdDown');
@@ -226,6 +230,7 @@
   let dropTimer = 0, lastTime = 0, running = false, paused = false, over = false;
   let clearing = false, flashRows = [], flashTimer = 0;
   let introParts = null, introShown = false;
+  let elapsed = 0, clockShown = -1;
 
   function emptyGrid(){
     return Array.from({length:ROWS}, () => Array(COLS).fill(null));
@@ -340,6 +345,19 @@
   function dropInterval(){
     return Math.max(60, 880 - (currentSpeed()-1)*58);
   }
+  function fmtTime(ms){
+    const total = Math.floor(ms/1000);
+    const h = Math.floor(total/3600), m = Math.floor(total/60) % 60, sec = total % 60;
+    const mm = h ? String(m).padStart(2,'0') : m;
+    return (h ? h + ':' : '') + mm + ':' + String(sec).padStart(2,'0');
+  }
+  function updateClock(){
+    const sec = Math.floor(elapsed/1000);
+    if(sec === clockShown) return;
+    clockShown = sec;
+    elClock.textContent = fmtTime(elapsed);
+  }
+
   function updateSpeedUi(){
     const s = currentSpeed();
     speedVal.textContent = s;
@@ -435,6 +453,8 @@
     const dt = t - lastTime;
     lastTime = t;
     if(!paused && !over){
+      elapsed += dt;
+      updateClock();
       if(clearing){
         flashTimer -= dt;
         draw();
@@ -455,7 +475,7 @@
   function endGame(){
     over = true; running = false;
     ovTitle.textContent = 'Konec hry';
-    ovText.textContent = 'Skóre ' + score + ' · ' + lines + ' řádků';
+    ovText.textContent = 'Skóre ' + score + ' · ' + lines + ' řádků · ' + fmtTime(elapsed);
     ovBtn.textContent = 'Nová hra';
     overlay.classList.add('show');
   }
@@ -479,6 +499,7 @@
     over = false; paused = false; running = true;
     clearing = false; flashRows = []; flashTimer = 0;
     introParts = null; introShown = false;
+    elapsed = 0; clockShown = -1; updateClock();
     dropTimer = 0; lastTime = 0;
     pauseBtn.textContent = 'Pauza';
     cur = makePiece(nextType());
@@ -535,6 +556,7 @@
 
   function showIdle(){
     grid = emptyGrid();
+    elapsed = 0; clockShown = -1; updateClock();
     bag = [];
     score = 0; lines = 0; level = 1;
     over = false; paused = false; running = false;
