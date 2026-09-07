@@ -50,8 +50,9 @@
   button:active{background:#26374B}
   button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .primary{background:var(--accent);color:#1A1408;border-color:transparent;font-weight:650}
+  .droprow{width:100%;display:flex;justify-content:flex-end;padding:0 8px 0 0;margin-top:auto}
   .controls{width:100%;display:flex;align-items:center;justify-content:center;gap:44px;
-    margin-top:auto;margin-bottom:auto;padding:6px 0;touch-action:none}
+    margin-top:14px;margin-bottom:auto;padding:6px 0;touch-action:none}
   .dot,.rotate,.side .drop,.spd button{touch-action:none;-webkit-touch-callout:none}
   .dpad{position:relative;flex:0 0 auto;width:178px;height:138px}
   .dot{position:absolute;border:none;border-radius:50%;padding:0}
@@ -111,7 +112,7 @@
       0 2px 4px rgba(0,0,0,.4),
       inset 0 4px 7px rgba(95,20,16,.5),
       inset 0 -1px 2px rgba(255,255,255,.2)}
-  .drop{width:72px;height:72px;align-self:center;border-radius:50%;border:none;padding:0;
+  .drop{width:72px;height:72px;border-radius:50%;border:none;padding:0;
     display:flex;align-items:center;justify-content:center;touch-action:none}
   .drop svg{width:34px;height:34px;fill:#20190A}
 
@@ -167,18 +168,21 @@
       </div>
       <button class="pausebtn" id="pauseBtn">Pauza</button>
       <button class="start" id="bStart">Start</button>
-      <button class="drop" id="bDrop" aria-label="Shodit kostku">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <rect x="7" y="2.6" width="10" height="2.8" rx="0.6"/>
-          <rect x="7" y="7.0" width="10" height="2.8" rx="0.6"/>
-          <rect x="7" y="11.4" width="10" height="2.8" rx="0.6"/>
-          <polygon points="4.6,15.8 19.4,15.8 12,22.4"/>
-        </svg>
-      </button>
     </aside>
   </div>
 
   <p class="hint">Na klávesnici: šipky, mezerník shodí, P pauza.</p>
+
+  <div class="droprow">
+    <button class="drop" id="bDrop" aria-label="Shodit kostku">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="7" y="2.6" width="10" height="2.8" rx="0.6"/>
+        <rect x="7" y="7.0" width="10" height="2.8" rx="0.6"/>
+        <rect x="7" y="11.4" width="10" height="2.8" rx="0.6"/>
+        <polygon points="4.6,15.8 19.4,15.8 12,22.4"/>
+      </svg>
+    </button>
+  </div>
 
   <div class="controls">
     <div class="dpad">
