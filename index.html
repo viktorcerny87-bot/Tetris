@@ -50,10 +50,9 @@
   button:active{background:#26374B}
   button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .primary{background:var(--accent);color:#1A1408;border-color:transparent;font-weight:650}
-  .droprow{width:100%;display:flex;justify-content:flex-end;padding:0 8px 0 0;margin-top:auto}
   .controls{width:100%;display:flex;align-items:center;justify-content:center;gap:44px;
-    margin-top:14px;margin-bottom:auto;padding:6px 0;touch-action:none}
-  .dot,.rotate,.side .drop,.spd button{touch-action:none;-webkit-touch-callout:none}
+    margin-top:auto;margin-bottom:auto;padding:6px 0;touch-action:none}
+  .dot,.rotate,.spd button{touch-action:none;-webkit-touch-callout:none}
   .dpad{position:relative;flex:0 0 auto;width:178px;height:138px}
   .dot{position:absolute;border:none;border-radius:50%;padding:0}
   .dot.small{width:50px;height:50px}
@@ -62,7 +61,7 @@
   #bDown{left:50%;margin-left:-25px;bottom:0}
   .rotate{flex:0 0 auto;width:92px;height:92px;border-radius:50%;border:none;padding:0}
 
-  .dot,.rotate,.drop{
+  .dot,.rotate{
     background:radial-gradient(circle at 34% 27%, #FFF3A0 0%, #FFE04A 32%, #FFD00C 62%, #E0AE00 100%);
     box-shadow:
       0 5px 0 #A57F00,
@@ -70,7 +69,7 @@
       inset 0 2px 3px rgba(255,255,255,.7),
       inset 0 -5px 8px rgba(150,108,0,.45);
     transition:box-shadow .05s linear, transform .05s linear}
-  .dot:active,.rotate:active,.drop:active{
+  .dot:active,.rotate:active:active{
     transform:translateY(4px);
     background:radial-gradient(circle at 34% 27%, #FFE87C 0%, #FBD22C 40%, #EFC000 75%, #CE9E00 100%);
     box-shadow:
@@ -78,7 +77,7 @@
       0 2px 4px rgba(0,0,0,.4),
       inset 0 4px 7px rgba(130,94,0,.5),
       inset 0 -1px 2px rgba(255,255,255,.25)}
-  .dot:focus-visible,.rotate:focus-visible,.drop:focus-visible{outline:2px solid #fff;outline-offset:3px}
+  .dot:focus-visible,.rotate:focus-visible:focus-visible{outline:2px solid #fff;outline-offset:3px}
   .side .pausebtn{width:100%;margin-top:auto;height:44px;border:none;border-radius:10px;padding:0;
     font-size:13px;font-weight:650;color:#0E2410;touch-action:none;
     background:linear-gradient(180deg,#B6EBC2 0%,#95DCA6 42%,#7FCC91 100%);
@@ -112,9 +111,6 @@
       0 2px 4px rgba(0,0,0,.4),
       inset 0 4px 7px rgba(95,20,16,.5),
       inset 0 -1px 2px rgba(255,255,255,.2)}
-  .drop{width:72px;height:72px;border-radius:50%;border:none;padding:0;
-    display:flex;align-items:center;justify-content:center;touch-action:none}
-  .drop svg{width:34px;height:34px;fill:#20190A}
 
 
   .spd{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:6px 6px 7px}
@@ -172,17 +168,6 @@
   </div>
 
   <p class="hint">Na klávesnici: šipky, mezerník shodí, P pauza.</p>
-
-  <div class="droprow">
-    <button class="drop" id="bDrop" aria-label="Shodit kostku">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="7" y="2.6" width="10" height="2.8" rx="0.6"/>
-        <rect x="7" y="7.0" width="10" height="2.8" rx="0.6"/>
-        <rect x="7" y="11.4" width="10" height="2.8" rx="0.6"/>
-        <polygon points="4.6,15.8 19.4,15.8 12,22.4"/>
-      </svg>
-    </button>
-  </div>
 
   <div class="controls">
     <div class="dpad">
@@ -661,8 +646,35 @@
   hold(document.getElementById('bLeft'), () => move(-1), true);
   hold(document.getElementById('bRight'), () => move(1), true);
   hold(document.getElementById('bDown'), softDrop, true);
-  hold(document.getElementById('bRot'), rotateCur, false);
-  hold(document.getElementById('bDrop'), hardDrop, false);
+  // otočný puntík: krátké klepnutí otočí, dlouhé podržení kostku shodí
+  (function bindRotate(){
+    const btn = document.getElementById('bRot');
+    let timer = null, dropped = false, lastTouch = 0;
+    const press = e => {
+      if(e.type === 'mousedown' && Date.now() - lastTouch < 800) return;
+      if(e.type === 'touchstart') lastTouch = Date.now();
+      if(e.cancelable) e.preventDefault();
+      dropped = false;
+      clearTimeout(timer);
+      timer = setTimeout(() => { dropped = true; hardDrop(); }, 400);
+    };
+    const release = () => {
+      clearTimeout(timer);
+      if(!dropped) rotateCur();
+      dropped = false;
+    };
+    const cancel = () => { clearTimeout(timer); dropped = false; };
+    btn.addEventListener('touchstart', press, {passive:false});
+    btn.addEventListener('touchend', release);
+    btn.addEventListener('touchcancel', cancel);
+    btn.addEventListener('mousedown', press);
+    btn.addEventListener('mouseup', release);
+    btn.addEventListener('mouseleave', cancel);
+    btn.addEventListener('keydown', e => {
+      if(e.key === 'Enter'){ e.preventDefault(); rotateCur(); }
+      if(e.key === ' '){ e.preventDefault(); hardDrop(); }
+    });
+  })();
   hold(spdUp, () => setSpeed(1), true);
   hold(spdDown, () => setSpeed(-1), true);
 
