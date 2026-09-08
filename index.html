@@ -296,14 +296,30 @@
     for(let y=0;y<n;y++) for(let x=0;x<n;x++) out[x][n-1-y] = m[y][x];
     return out;
   }
+  // nejnižší volné políčko ve sloupci — tam propadávka skončí
+  function restRow(x){
+    for(let y=ROWS-1; y>=0; y--) if(!grid[y][x]) return y;
+    return -1;                                   // sloupec je plný
+  }
+  // je propadávka zrovna uvnitř hromady? (nad ní leží uležené kostky)
+  function passingThrough(){
+    if(!cur || cur.type !== 'P') return false;
+    for(let y=0; y<cur.y; y++) if(grid[y][cur.x]) return true;
+    return false;
+  }
+
   function collides(p, nx, ny, mat){
+    if(p.type === 'P'){
+      if(nx < 0 || nx >= COLS || ny >= ROWS) return true;
+      const r = restRow(nx);
+      return r < 0 || ny > r;                    // zastaví se přesně v mezeře
+    }
     const m = mat || p.m;
     for(let y=0;y<m.length;y++){
       for(let x=0;x<m[y].length;x++){
         if(!m[y][x]) continue;
         const gx = nx + x, gy = ny + y;
         if(gx < 0 || gx >= COLS || gy >= ROWS) return true;
-        if(p.type === 'P') continue;          // propadávka projde skrz
         if(gy >= 0 && grid[gy][gx]) return true;
       }
     }
@@ -336,11 +352,7 @@
   }
   function lock(){
     if(cur.type === 'P'){
-      // propadne až na dno svého sloupce a zaplní nejnižší volnou mezeru
-      const gx = cur.x;
-      let ty = -1;
-      for(let y=ROWS-1; y>=0; y--){ if(!grid[y][gx]){ ty = y; break; } }
-      if(ty >= 0) grid[ty][gx] = 'P';
+      if(cur.y >= 0 && cur.y < ROWS && !grid[cur.y][cur.x]) grid[cur.y][cur.x] = 'P';
     } else {
       for(let y=0;y<cur.m.length;y++){
         for(let x=0;x<cur.m[y].length;x++){
@@ -472,7 +484,7 @@
       for(const p of introParts) cell(bctx, p.x*BS, p.y*BS, BS, COLORS[p.t], Math.max(0, p.a));
     }
     if(cur && !over){
-      const blink = cur.type === 'P'
+      const blink = passingThrough()
         ? (Math.floor(performance.now()/150) % 2 ? 0.35 : 1)
         : 1;
       for(let y=0;y<cur.m.length;y++) for(let x=0;x<cur.m[y].length;x++){
@@ -517,7 +529,7 @@
           if(!collides(cur, cur.x, cur.y+1)) cur.y++;
           else lock();
           draw();
-        } else if(cur && cur.type === 'P'){
+        } else if(passingThrough()){
           draw();                              // kvůli blikání
         }
       }
