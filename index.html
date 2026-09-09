@@ -53,12 +53,12 @@
   .controls{width:100%;display:flex;align-items:center;justify-content:center;gap:44px;
     margin-top:auto;margin-bottom:auto;padding:6px 0;touch-action:none}
   .dot,.rotate,.spd button{touch-action:none;-webkit-touch-callout:none}
-  .dpad{position:relative;flex:0 0 auto;width:178px;height:138px}
+  .dpad{position:relative;flex:0 0 auto;width:186px;height:146px}
   .dot{position:absolute;border:none;border-radius:50%;padding:0}
-  .dot.small{width:50px;height:50px}
+  .dot.small{width:58px;height:58px}
   #bLeft{left:0;top:0}
   #bRight{right:0;top:0}
-  #bDown{left:50%;margin-left:-25px;bottom:0}
+  #bDown{left:50%;margin-left:-29px;bottom:0}
   .rotate{flex:0 0 auto;width:92px;height:92px;border-radius:50%;border:none;padding:0}
 
   .dot,.rotate{
@@ -304,7 +304,8 @@
   // je propadávka zrovna uvnitř hromady? (nad ní leží uležené kostky)
   function passingThrough(){
     if(!cur || cur.type !== 'P') return false;
-    for(let y=0; y<cur.y; y++) if(grid[y][cur.x]) return true;
+    if(cur.y >= restRow(cur.x)) return false;      // už je v mezeře — svítí
+    for(let y=0; y<=cur.y; y++) if(grid[y][cur.x]) return true;  // vjela do hromady
     return false;
   }
 
@@ -659,7 +660,7 @@
       if(e.cancelable) e.preventDefault();
       stop();
       fn();
-      if(repeat) timer = setTimeout(() => { interval = setInterval(fn, 70); }, 220);
+      if(repeat) timer = setTimeout(() => { interval = setInterval(fn, 55); }, 130);
     };
     btn.addEventListener('touchstart', start, {passive:false});
     btn.addEventListener('touchend', stop);
